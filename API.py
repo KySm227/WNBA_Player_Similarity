@@ -118,4 +118,7 @@ def compare(name1, name2, age):
     }
 
 # Example usage:
+name_input = input("Enter player name: ")
+age_input = input("Enter player age: ")
+print(stats(name_input, age_input))
 print(compare("A'ja Wilson", "Breanna Stewart", "25"))
