@@ -31,7 +31,8 @@ def fetch_player_stats(player_name, url):
     per_game_table = soup.find('table', {'id': ['per_game0', 'per_game1']})
     per_100_table = comment_soup.find('table', {'id': ['per_poss0', 'per_poss1']})
     advanced_table = soup.find('table', {'id': ['advanced0', 'advanced1']})
-
+    shooting_table = comment_soup.find('table', {'id': ['shooting0', 'shooting1']})
+    pbp_table = comment_soup.find('table', {'id': ['pbp0', 'pbp1']})
     # Extract Per Game Stats
     if per_game_table:
         df_per_game = pd.read_html(str(per_game_table))[0]
@@ -78,5 +79,45 @@ def fetch_player_stats(player_name, url):
                         if ('nan' in key) or (isinstance(value, float) and math.isnan(value)):
                             stats[key] = 0.0
                     player_stats[str(stats["Age"])]["advanced"] = stats
+    if shooting_table:
+        for comment in comments:
+            comment_soup = BeautifulSoup(comment, 'html.parser')
+            table = comment_soup.find('table', {'id': ['shooting0', 'shooting1']})
+            if table:
+                df_shooting = pd.read_html(str(table))[0]
+                break
+        for stats in df_shooting.to_dict('records'):
+            stats = {k[-1] if isinstance(k, tuple) else k: v for k, v in stats.items()}
+            print(stats, "\n")
+            if stats['Year'] != 'Career' and ("season" not in str(stats['Year'])) and ("Did Not Play" not in str(stats.values())) and stats is not None:
+                if not math.isnan(float(stats["Year"])):                
+                    keys_to_delete = [k for k in stats if 'Unnamed' in k]
+                    for key in keys_to_delete:
+                        del stats[key]
+                    for key, value in stats.items():
+                        if ('nan' in key) or (isinstance(value, float) and math.isnan(value)):
+                            stats[key] = 0.0
+                    player_stats[str(stats["Age"])]["shooting"] = stats
+        if pbp_table:
+            for comment in comments:
+                comment_soup = BeautifulSoup(comment, 'html.parser')
+                table = comment_soup.find('table', {'id': ['pbp0', 'pbp1']})
+                if table:
+                    df_pbp = pd.read_html(str(table))[0]
+                    print(df_pbp.to_dict('records'))
+                    break
+            for stats in df_pbp.to_dict('records'):
+                stats = {k[-1] if isinstance(k, tuple) else k: v for k, v in stats.items()}
+                print(stats, "\n")
+                if stats['Year'] != 'Career' and ("season" not in str(stats['Year'])) and ("Did Not Play" not in str(stats.values())) and stats is not None:
+                    if not math.isnan(float(stats["Year"])):                
+                        keys_to_delete = [k for k in stats if 'Unnamed' in k]
+                        for key in keys_to_delete:
+                            del stats[key]
+                        for key, value in stats.items():
+                            if ('nan' in key) or (isinstance(value, float) and math.isnan(value)):
+                                stats[key] = 0.0
+                        player_stats[str(stats["Age"])]["pbp"] = stats
     return player_stats
-print(fetch_player_stats("Tajama Abraham", "https://www.basketball-reference.com/wnba/players/a/abrahta01w.html"))
+
+print(fetch_player_stats("A'ja Wilson", 'https://www.basketball-reference.com/wnba/players/w/wilsoa01w.html'))
