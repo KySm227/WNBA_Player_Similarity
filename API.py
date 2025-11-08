@@ -1,4 +1,3 @@
-# Make each the primary dict have the age and inside the age will contains the stats(per game, advanced, per100) for that year
 from math import nan
 import requests
 import math
